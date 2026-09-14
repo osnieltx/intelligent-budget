@@ -9,8 +9,8 @@ on:
       - 'requirements.txt'
       - '.github/workflows/**'
   schedule:
-    # Runs twice a day: 15:00 and 21:00 UTC (12:00 and 18:00 BRT)
-    - cron: '0 15,21 * * *'
+    # Runs twice a day: 12:00 and 18:00 BRT
+    - cron: '0 12,18 * * *'
   workflow_dispatch: # Allows triggering manually from GitHub UI
 
 jobs:
