@@ -8,9 +8,12 @@ from datetime import date
 import gspread
 from google.oauth2.service_account import Credentials
 
+from sheet import set_dropdown_from_range
+
 # ==========================================
 # CONFIGURATIONS
 # ==========================================
+dry_run = os.environ.get('DRY_RUN')
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 ACCOUNT_ID = os.environ.get("ACCOUNT_ID")
@@ -133,6 +136,9 @@ def main():
     first_of_month = date(now.year, now.month, day=1).strftime('%Y-%m-%d')
     _, last_day = calendar.monthrange(now.year, now.month)
     last_of_month = date(now.year, now.month, day=last_day).strftime('%Y-%m-%d')
+    if dry_run:
+        current_month_str += '_test'
+        print("Dry run, saving to a test Google Sheet...")
 
     worksheet = get_or_create_monthly_worksheet(spreadsheet, current_month_str)
 
@@ -184,6 +190,13 @@ def main():
 
         save_to_google_sheet(worksheet, df_final)
         print(f"✔️ Google Sheet tab '{current_month_str}' synchronized successfully.")
+
+        # category dropdown
+        set_dropdown_from_range(spreadsheet, worksheet.id, start_row=1, end_row=len(df_final)+1, col_idx=4)
+        # meta-category
+        metacat_col = [['meta-category']] + [[f'=VLOOKUP(E2, categories!A:B, {i+2}, FALSE)']
+                                             for i in range(len(df_final))]
+        worksheet.update(values=metacat_col, range_name=f'F1:F{len(df_final)+1}', value_input_option="USER_ENTERED",)
 
         # Active Outflow Summary
         df_report = df_final[~df_final['category'].str.contains('Ignore', case=False, na=False)]
