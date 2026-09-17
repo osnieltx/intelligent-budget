@@ -194,7 +194,7 @@ def main():
         # category dropdown
         set_dropdown_from_range(spreadsheet, worksheet.id, start_row=1, end_row=len(df_final)+1, col_idx=4)
         # meta-category
-        metacat_col = [['meta-category']] + [[f'=VLOOKUP(E2, categories!A:B, {i+2}, FALSE)']
+        metacat_col = [['meta-category']] + [[f'=VLOOKUP(E{i+2}, categories!A:B, 2, FALSE)']
                                              for i in range(len(df_final))]
         worksheet.update(values=metacat_col, range_name=f'F1:F{len(df_final)+1}', value_input_option="USER_ENTERED",)
 
