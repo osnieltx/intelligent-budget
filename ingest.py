@@ -32,23 +32,21 @@ SCOPES = [
 # CUSTOM CATEGORIZATION RULES
 # ==========================================
 def auto_categorize_transaction(description, pluggy_category):
-    desc = description.upper()
+    desc = description.lower()
 
-    if 'IFD*' in desc or 'IFOOD' in desc:
-        return 'Food / Delivery'
-    if 'UBER' in desc or '99APP' in desc or 'POSTO' in desc:
-        return 'Transportation'
-    if 'PAGAMENTO DE FATURA' in desc or 'PAGAMENTO FATURA' in desc:
-        return 'Ignore (Credit Card Bill)'
-    if 'GARAGE BIKE' in desc or 'CANOA' in desc:
-        return 'Sports / Hobbies'
-    if 'ENEL' in desc or 'CLARO' in desc or 'VIVO' in desc:
-        return 'Fixed Bills'
+    if 'garritano' in desc or 'nagumo' in desc:
+        return 'food'
+    if 'reserva cultural' in desc:
+        return 'leisure'
+    if 'drogaria' in desc:
+        return 'self-care'
+    if 'osniel lopes teixeira' in desc or 'marcela rodrigues dos santos' in desc:
+        return 'ignore'
 
     if pluggy_category:
-        return f"Pluggy: {pluggy_category}"
+        return pluggy_category
 
-    return 'Other / Uncategorized'
+    return 'uncategorized'
 
 # ==========================================
 # API CLIENT FUNCTIONS
