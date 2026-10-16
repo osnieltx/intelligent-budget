@@ -28,6 +28,8 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive'
 ]
 
+LEDGER_COLUMNS = ['id', 'date', 'time', 'description', 'amount', 'category']
+
 # ==========================================
 # CUSTOM CATEGORIZATION RULES
 # ==========================================
@@ -85,7 +87,7 @@ def get_or_create_monthly_worksheet(spreadsheet, sheet_title):
     except gspread.exceptions.WorksheetNotFound:
         worksheet = spreadsheet.add_worksheet(title=sheet_title, rows=100, cols=10)
         # Initialize headers
-        worksheet.append_row(['id', 'date', 'time', 'description', 'amount', 'category'])
+        worksheet.append_row(LEDGER_COLUMNS)
     return worksheet
 
 def load_google_sheet_data(worksheet):
@@ -94,7 +96,7 @@ def load_google_sheet_data(worksheet):
         df = pd.DataFrame(records)
         df['id'] = df['id'].astype(str)
         return df
-    return pd.DataFrame(columns=['id', 'date', 'time', 'description', 'amount', 'category'])
+    return pd.DataFrame(columns=LEDGER_COLUMNS)
 
 def save_to_google_sheet(worksheet, df):
   # Clean NaN/None values so they become empty strings instead of invalid JSON floats
@@ -185,6 +187,7 @@ def main():
             print("No records to process.")
             return
 
+        df_final = df_final.reindex(columns=LEDGER_COLUMNS, fill_value="")
         df_final = df_final.sort_values(by='date', ascending=False).reset_index(drop=True)
 
         save_to_google_sheet(worksheet, df_final)
