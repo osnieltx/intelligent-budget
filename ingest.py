@@ -85,7 +85,7 @@ def get_or_create_monthly_worksheet(spreadsheet, sheet_title):
     except gspread.exceptions.WorksheetNotFound:
         worksheet = spreadsheet.add_worksheet(title=sheet_title, rows=100, cols=10)
         # Initialize headers
-        worksheet.append_row(['id', 'date', 'description', 'amount', 'category', 'time'])
+        worksheet.append_row(['id', 'date', 'time', 'description', 'amount', 'category'])
     return worksheet
 
 def load_google_sheet_data(worksheet):
@@ -94,7 +94,7 @@ def load_google_sheet_data(worksheet):
         df = pd.DataFrame(records)
         df['id'] = df['id'].astype(str)
         return df
-    return pd.DataFrame(columns=['id', 'date', 'description', 'amount', 'category', 'time'])
+    return pd.DataFrame(columns=['id', 'date', 'time', 'description', 'amount', 'category'])
 
 def save_to_google_sheet(worksheet, df):
   # Clean NaN/None values so they become empty strings instead of invalid JSON floats
@@ -159,10 +159,10 @@ def main():
             api_data_list.append({
                 'id': str(tx.get('id')),
                 'date': tx.get('date')[:10],
+                'time': tx.get('date')[11:19],
                 'description': tx.get('description', ''),
                 'amount': float(tx.get('amount', 0.0)),
-                'category': auto_categorize_transaction(tx.get('description', ''), tx.get('category')),
-                'time': tx.get('date')[11:19]
+                'category': auto_categorize_transaction(tx.get('description', ''), tx.get('category'))
             })
         df_api = pd.DataFrame(api_data_list)
 
@@ -191,9 +191,9 @@ def main():
         print(f"✔️ Google Sheet tab '{current_month_str}' synchronized successfully.")
 
         # category dropdown
-        set_dropdown_from_range(spreadsheet, worksheet.id, start_row=1, end_row=len(df_final)+1, col_idx=4)
+        set_dropdown_from_range(spreadsheet, worksheet.id, start_row=1, end_row=len(df_final)+1, col_idx=5)
         # meta-category
-        metacat_col = [['meta-category']] + [[f'=VLOOKUP(E{i+2}, categories!A:B, 2, FALSE)']
+        metacat_col = [['meta-category']] + [[f'=VLOOKUP(F{i+2}, categories!A:B, 2, FALSE)']
                                              for i in range(len(df_final))]
         worksheet.update(values=metacat_col, range_name=f'G1:G{len(df_final)+1}', value_input_option="USER_ENTERED",)
 
