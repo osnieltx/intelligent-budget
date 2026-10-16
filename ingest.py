@@ -42,6 +42,10 @@ def auto_categorize_transaction(description, pluggy_category):
         return 'leisure'
     if 'drogaria' in desc:
         return 'self-care'
+    if 'enel' in desc:
+        return 'electricity '  # trailing space matches the 'categories' sheet entry
+    if 'leste flu' in desc:
+        return 'internet'
     if 'osniel lopes teixeira' in desc or 'marcela rodrigues dos santos' in desc:
         return 'ignore'
 
