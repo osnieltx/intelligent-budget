@@ -166,7 +166,7 @@ def main():
         api_data_list.append({
             'id': str(tx.get('id')),
             'date': tx.get('date')[:10],
-            'time': tx.get('date')[11:19],
+            'time': tx.get('date')[11:16],
             'description': tx.get('description', ''),
             'amount': float(tx.get('amount', 0.0)),
             'category': auto_categorize_transaction(tx.get('description', ''), tx.get('category'))
