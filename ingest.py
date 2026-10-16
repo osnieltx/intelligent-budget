@@ -118,6 +118,15 @@ def save_to_google_sheet(worksheet, df):
   worksheet.clear()
   worksheet.update(values=values, range_name="A1")
 
+  # Re-enter just date/time as USER_ENTERED so Sheets parses them into real
+  # Date/Time values (lets Sheets show its calendar picker on click). Kept
+  # separate from the RAW write above so free-text fields like description
+  # (sourced from the bank) can't be misread as formulas.
+  last_row = len(values)
+  worksheet.update(values=df_clean[['date', 'time']].values.tolist(), range_name=f"B2:C{last_row}", value_input_option="USER_ENTERED")
+  worksheet.format(f"B2:B{last_row}", {"numberFormat": {"type": "DATE", "pattern": "yyyy-mm-dd"}})
+  worksheet.format(f"C2:C{last_row}", {"numberFormat": {"type": "TIME", "pattern": "hh:mm"}})
+
 # ==========================================
 # MAIN EXECUTION
 # ==========================================
