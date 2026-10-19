@@ -48,8 +48,13 @@ def auto_categorize_transaction(description, pluggy_category):
         return 'electricity'
     if 'leste flu' in desc:
         return 'internet'
-    if 'osniel lopes teixeira' in desc or 'marcela rodrigues dos santos' in desc:
+    if ('osniel lopes teixeira' in desc or 'marcela rodrigues dos santos' in desc
+            or 'valor adicionado na conta por cartão de crédito' in desc):
         return 'ignore'
+    if 'cantinapraia' in desc or 'francinetejoaquim' in desc:
+        return 'restaurant'
+    if 'popeyes' is desc or 'mcdonalds' in desc:
+        return 'fast food'
 
     if pluggy_category:
         return pluggy_category
