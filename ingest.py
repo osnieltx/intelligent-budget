@@ -2,9 +2,11 @@ import json
 import os
 
 import calendar
+from zoneinfo import ZoneInfo
+
 import requests
 import pandas as pd
-from datetime import date
+from datetime import date, datetime
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -43,7 +45,7 @@ def auto_categorize_transaction(description, pluggy_category):
     if 'drogaria' in desc:
         return 'self-care'
     if 'enel' in desc:
-        return 'electricity '  # trailing space matches the 'categories' sheet entry
+        return 'electricity'
     if 'leste flu' in desc:
         return 'internet'
     if 'osniel lopes teixeira' in desc or 'marcela rodrigues dos santos' in desc:
@@ -176,10 +178,12 @@ def main():
     # Build DataFrame from fresh API pull
     api_data_list = []
     for tx in all_api_txs:
+        utc_time = datetime.fromisoformat(tx['date'])
+        br_time = utc_time.astimezone(ZoneInfo("America/Sao_Paulo"))
         api_data_list.append({
             'id': str(tx.get('id')),
             'date': tx.get('date')[:10],
-            'time': tx.get('date')[11:16],
+            'time': br_time.strftime('%H:%M'),
             'description': tx.get('description', ''),
             'amount': float(tx.get('amount', 0.0)),
             'category': auto_categorize_transaction(tx.get('description', ''), tx.get('category'))
