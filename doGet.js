@@ -20,21 +20,24 @@ function buildPayload() {
   // 1. Top 5 Expenses (from the ExpenseByCategory table, wherever it sits)
   const top5 = readTop5(ss);
 
-  // 2. Budget Metrics
-  // For example: Total Income, Spent on Wants, and Remaining Wants
-  const income = Number(dashSheet.getRange("B5").getValue()) || 4030; // e.g. B3
-  const wantsBudget = income * 0.30;
-  const wantsSpent = Math.abs(Number(dashSheet.getRange("C3").getValue())) || 0; // e.g. B4
-  const wantsRemaining = Math.max(0, wantsBudget - wantsSpent);
+  // 2. Budget per meta-category (dashboard rows 2-4: needs, wants, finance;
+  // A = name, B = budget, C = spent). The sheet owns the budget math.
+  const categories = dashSheet.getRange("A2:C4").getValues()
+    .filter(([name]) => name !== "")
+    .map(([name, budget, spent]) => ({
+      name: String(name).trim(),
+      budget: Number(budget) || 0,
+      spent: Number(spent) || 0
+    }));
 
   return {
     top5: top5,
     budget: {
-      income: income,
-      wantsBudget: wantsBudget,
-      wantsSpent: wantsSpent,
-      wantsRemaining: wantsRemaining,
-      percentageUsed: Math.min(100, Math.round((wantsSpent / wantsBudget) * 100))
+      categories: categories,
+      total: {
+        budget: categories.reduce((sum, c) => sum + c.budget, 0),
+        spent: categories.reduce((sum, c) => sum + c.spent, 0)
+      }
     }
   };
 }
