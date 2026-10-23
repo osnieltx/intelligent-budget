@@ -35,26 +35,29 @@ LEDGER_COLUMNS = ['id', 'date', 'time', 'description', 'amount', 'category']
 # ==========================================
 # CUSTOM CATEGORIZATION RULES
 # ==========================================
-def auto_categorize_transaction(description, pluggy_category):
+CATEGORIES_SHEET = 'categories'
+
+def load_categorization_rules(spreadsheet):
+    """Reads (category, keywords) rules from the categories sheet.
+
+    Layout: A = category, B = meta-category, C = comma-separated keywords
+    matched case-insensitively against the transaction description. Rows
+    without keywords are skipped; rules are tried top to bottom.
+    """
+    rules = []
+    for row in spreadsheet.worksheet(CATEGORIES_SHEET).get_all_values():
+        category = row[0].strip() if row else ''
+        keywords = [k.strip().lower() for k in (row[2] if len(row) > 2 else '').split(',') if k.strip()]
+        if category and keywords:
+            rules.append((category, keywords))
+    return rules
+
+def auto_categorize_transaction(description, pluggy_category, rules):
     desc = description.lower()
 
-    if 'garritano' in desc or 'nagumo' in desc:
-        return 'food'
-    if 'reserva cultural' in desc:
-        return 'leisure'
-    if 'drogaria' in desc:
-        return 'self-care'
-    if 'enel' in desc:
-        return 'electricity'
-    if 'leste flu' in desc:
-        return 'internet'
-    if ('osniel lopes teixeira' in desc or 'marcela rodrigues dos santos' in desc
-            or 'valor adicionado na conta por cartão de crédito' in desc):
-        return 'ignore'
-    if 'cantinapraia' in desc or 'francinetejoaquim' in desc:
-        return 'restaurant'
-    if 'popeyes' is desc or 'mcdonalds' in desc:
-        return 'fast food'
+    for category, keywords in rules:
+        if any(k in desc for k in keywords):
+            return category
 
     if pluggy_category:
         return pluggy_category
@@ -167,6 +170,7 @@ def main():
         print("Dry run, saving to a test Google Sheet...")
 
     worksheet = get_or_create_monthly_worksheet(spreadsheet, current_month_str)
+    categorization_rules = load_categorization_rules(spreadsheet)
 
     print("Authenticating with Pluggy...")
     api_key = get_auth_token(CLIENT_ID, CLIENT_SECRET)
@@ -191,7 +195,7 @@ def main():
             'time': br_time.strftime('%H:%M'),
             'description': tx.get('description', ''),
             'amount': float(tx.get('amount', 0.0)),
-            'category': auto_categorize_transaction(tx.get('description', ''), tx.get('category'))
+            'category': auto_categorize_transaction(tx.get('description', ''), tx.get('category'), categorization_rules)
         })
     df_api = pd.DataFrame(api_data_list)
 
