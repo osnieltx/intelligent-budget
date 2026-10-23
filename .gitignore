@@ -210,3 +210,5 @@ __marimo__/
 
 # Mac
 .DS_Store
+# Widget config (holds the Apps Script URL)
+config.js
